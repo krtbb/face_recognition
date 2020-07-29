@@ -200,6 +200,20 @@ def face_landmarks(face_image, face_locations=None, model="large"):
         raise ValueError("Invalid landmarks model type. Supported models are ['small', 'large'].")
 
 
+def parse_landmark(landmark):
+    """
+    Given a landmark, returns a list of integers that means face location in top-right-bottm-left order.
+
+    :param landmark: landmark to parse
+    :return: A list of integers of face locations
+    """
+    top = landmark.rect.top()
+    right = landmark.rect.right()
+    bottom = landmark.rect.bottom()
+    left = landmark.rect.left()
+    return top, right, bottom, left
+
+
 def face_encodings(face_image, known_face_locations=None, num_jitters=1, model="small"):
     """
     Given an image, return the 128-dimension face encoding for each face in the image.
@@ -212,6 +226,19 @@ def face_encodings(face_image, known_face_locations=None, num_jitters=1, model="
     """
     raw_landmarks = _raw_face_landmarks(face_image, known_face_locations, model)
     return [np.array(face_encoder.compute_face_descriptor(face_image, raw_landmark_set, num_jitters)) for raw_landmark_set in raw_landmarks]
+
+
+def face_encodings_with_locations(face_image, known_face_locations=None, num_jitters=1, model='small'):
+    """
+    Given an image, return the 128-dimention face encoding and location for each face in the image.
+    Process mostly same as face_encodings(). 
+    A difference in this function is to return not only face encodings but also face locations.
+
+    :return: 1st. A list of 128-dimensional face encodings.
+    :return: 2nd. A list of 4-dimensional face locations in top-right-bottom-left order.
+    """
+    raw_landmarks = _raw_face_landmarks(face_image, known_face_locations, model)
+    return [np.array(face_encoder.compute_face_descriptor(face_image, raw_landmark_set, num_jitters)) for raw_landmark_set in raw_landmarks], [np.array(parse_landmark(raw_landmark_set)) for raw_landmark_set in raw_landmarks]
 
 
 def compare_faces(known_face_encodings, face_encoding_to_check, tolerance=0.6):
