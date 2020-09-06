@@ -225,7 +225,10 @@ def face_encodings(face_image, known_face_locations=None, num_jitters=1, model="
     :return: A list of 128-dimensional face encodings (one for each face in the image)
     """
     raw_landmarks = _raw_face_landmarks(face_image, known_face_locations, model)
-    return [np.array(face_encoder.compute_face_descriptor(face_image, raw_landmark_set, num_jitters)) for raw_landmark_set in raw_landmarks]
+    face_encodings_list = []
+    for raw_landmark_set in raw_landmarks:
+        face_encodings_list.append(np.array(face_encoder.compute_face_descriptor(face_image, raw_landmark_set, num_jitters)))
+    return face_encodings_list
 
 
 def face_encodings_with_locations(face_image, known_face_locations=None, num_jitters=1, model='small'):
@@ -238,7 +241,12 @@ def face_encodings_with_locations(face_image, known_face_locations=None, num_jit
     :return: 2nd. A list of 4-dimensional face locations in top-right-bottom-left order.
     """
     raw_landmarks = _raw_face_landmarks(face_image, known_face_locations, model)
-    return [np.array(face_encoder.compute_face_descriptor(face_image, raw_landmark_set, num_jitters)) for raw_landmark_set in raw_landmarks], [np.array(parse_landmark(raw_landmark_set)) for raw_landmark_set in raw_landmarks]
+    face_encodings_list = []
+    face_locations_list = []
+    for raw_landmark_set in raw_landmarks:
+        face_encodings_list.append(np.array(face_encoder.compute_face_descriptor(face_image, raw_landmark_set, num_jitters)))
+        face_locations_list.append(np.array(parse_landmark(raw_landmark_set)))
+    return face_encodings_list, face_locations_list
 
 
 def compare_faces(known_face_encodings, face_encoding_to_check, tolerance=0.6):
